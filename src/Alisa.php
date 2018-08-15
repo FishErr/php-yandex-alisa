@@ -21,56 +21,56 @@ class Alisa extends Handler {
      * Стартовый текст, который будет воспроизведен при запуске навыка.
      * @var String
      */
-    private $startMessage = "";
+    protected $startMessage = "";
 
     /**
      * Стартовый текст, который будет воспроизведен синтезом речи при запуске навыка.
      * @var String
      */
-    private $startMessageTTS = "";
+    protected $startMessageTTS = "";
 
     /**
      * Старотовые кнопки, которые будут отоброжаться при запуске навыка.
      * @var array
      */
-    private $startButton = [];
+    protected $startButton = [];
 
     /**
      * Версия Алисы
      * @var String
      */
-    private $version = self::VERSION;
+    protected $version = self::VERSION;
 
     /**
      * Ответ на любые неизвестные запросы.
      * @var string
      */
-    private $anyMessage = "Простите, я вас не понимаю.";
+    protected $anyMessage = "Простите, я вас не понимаю.";
 
     /**
      * Чувствительность к регистру.
      * @var bool
      */
-    private $caseSensitive = true;
+    protected $caseSensitive = true;
 
     /**
      * Проверка на орфографию.
      * @var bool
      */
-    private $speller = false;
+    protected $speller = false;
 
     /**
      * Система блоков.
      * @var bool
      */
-    private $blocks = false;
+    protected $blocks = false;
 
 
     /**
      * Переменная для получения ответа.
      * @var array
      */
-    private $request;
+    protected $request;
 
     /**
      * Переменная для формирования ответа.
@@ -367,7 +367,7 @@ class Alisa extends Handler {
      *
      * @param String $data
      */
-    private function logger(String $data = "") {
+    protected function logger(String $data = "") {
         if (!empty($this->request)) {
             if ($data == "") {
                 $s = $this->request;

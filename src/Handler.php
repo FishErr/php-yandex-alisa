@@ -59,10 +59,11 @@ class Handler {
 	 * Handler constructor.
 	 */
 
-	public function __construct() {
-		$this->files = new Filesystem(new Local(__DIR__ .  "../../blocks"), ['visibility' => 'public']);
+	public function __construct($imagePath, $blocksPath, $configPath) {
+		$this->imagesDir = $imagePath;
+		$this->files = new Filesystem(new Local($blocksPath), ['visibility' => 'public']);
 		$loader = new YamlLoader();
-		$setting = $loader->loadFromFile('settings.yml');
+		$setting = $loader->loadFromFile($configPath);
 		$this->token     = $setting['skill-token'];
 		$this->skillID   = $setting['skill-id'];
 		$this->skillName = $setting['skill-name'];

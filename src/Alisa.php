@@ -377,7 +377,7 @@ class Alisa extends Handler {
             file_put_contents(
                 $this->logFile,
                 date('Y-m-d H:i:s') .
-                PHP_EOL . $s . PHP_EOL,
+                PHP_EOL . json_encode($s) . PHP_EOL,
                 FILE_APPEND
             );
         }

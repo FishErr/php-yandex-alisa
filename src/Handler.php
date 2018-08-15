@@ -17,6 +17,10 @@ class Handler {
 	 */
 	public $files;
 
+	/**
+	* Файл логов
+	*/
+	public $logFile;
 
 	/**
 	 * ID-навыка.
@@ -59,8 +63,9 @@ class Handler {
 	 * Handler constructor.
 	 */
 
-	public function __construct($imagePath, $blocksPath, $configPath) {
+	public function __construct($logFile, $imagePath, $blocksPath, $configPath) {
 		$this->imagesDir = $imagePath;
+		$this->logFile = $logFile;
 		$this->files = new Filesystem(new Local($blocksPath), ['visibility' => 'public']);
 		$loader = new YamlLoader();
 		$setting = $loader->loadFromFile($configPath);

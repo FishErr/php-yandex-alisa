@@ -139,7 +139,7 @@ class Alisa extends Handler {
      *
      * @return $this
      */
-    public function setBlocksActions(bool $on = true) {
+    public function setBlocksActions($on = true) {
         $this->blocks = $on;
         return $this;
     }
@@ -161,7 +161,7 @@ class Alisa extends Handler {
      *
      * @return $this
      */
-    public function setSpellerCorrect(bool $speller = false) {
+    public function setSpellerCorrect($speller = false) {
         $this->speller = $speller;
         return $this;
     }
@@ -172,7 +172,7 @@ class Alisa extends Handler {
      *
      * @return $this
      */
-    public function setCaseSensitive(bool $sensitive = true) {
+    public function setCaseSensitive($sensitive = true) {
         $this->caseSensitive = $sensitive;
         return $this;
     }
@@ -196,7 +196,7 @@ class Alisa extends Handler {
      *
      * @return $this
      */
-    public function addStartMessage(String $message) {
+    public function addStartMessage($message) {
         $this->startMessage = $message;
         if( empty($this->startMessageTTS) ) {
             $this->startMessageTTS = $message;
@@ -225,7 +225,7 @@ class Alisa extends Handler {
      *
      * @return $this
      */
-    public function addStartButton(String $title, bool $hide = false, Array $payload = [], String $url = null) {
+    public function addStartButton($title, $hide = false, Array $payload = [], $url = null) {
         $this->startButton[] = [
             'title'=>$title,
             'payload'=>$payload,
@@ -241,12 +241,12 @@ class Alisa extends Handler {
      *
      * @return $this
      */
-    public function setVersion(String $version = self::VERSION) {
+    public function setVersion($version = self::VERSION) {
         $this->version = $version;
         return $this;
     }
 
-    public function addButton(String $title, bool $hide = false, Array $payload = [], String $url = null) {
+    public function addButton($title, $hide = false, Array $payload = [], $url = null) {
         $this->response['response']['buttons'][] = [
             'title'=>$title,
             'payload'=>$payload,
@@ -273,7 +273,7 @@ class Alisa extends Handler {
      *
      * @return $this
      */
-    public function sendMessage(String $message, String $tts = "", bool $speller = false) {
+    public function sendMessage($message, $tts = "", $speller = false) {
         $msg = ( $speller == true ) ? $this->spellingCheck($message) : $message;
         $this->response = [
             'response' => [
@@ -294,7 +294,7 @@ class Alisa extends Handler {
 	 *
 	 * @return $this
 	 */
-    public function sendGallery(Array $images, String $headerText = "", String $footerText = "", Array $footerOpt = []) {
+    public function sendGallery(Array $images, $headerText = "", $footerText = "", Array $footerOpt = []) {
     	$img = DB::table('images')->findAll()->asArray();
     	$items = [];
 	    $this->response['response']['card'] = [
@@ -342,7 +342,7 @@ class Alisa extends Handler {
 	 *
 	 * @return $this
 	 */
-    public function sendImage($path, String $title = "", String $description = "", Array $options = []) {
+    public function sendImage($path, $title = "", $description = "", Array $options = []) {
     	$img = DB::table('images')->findAll()->asArray();
     	foreach ($img as $key=>$value) {
     		if( $value['image_name'] == substr(md5($path), 0, 16) ) {
@@ -367,7 +367,7 @@ class Alisa extends Handler {
      *
      * @param String $data
      */
-    protected function logger(String $data = "") {
+    protected function logger($data = "") {
         if (!empty($this->request)) {
             if ($data == "") {
                 $s = $this->request;
@@ -382,7 +382,7 @@ class Alisa extends Handler {
             );
         }
     }
-	protected function sendPayload(String $message, String $tts = "", array $button = []) {
+	protected function sendPayload($message, $tts = "", array $button = []) {
 		$this->sendMessage($message, $tts)->addButton($button['title'], $button['hide'], $button['payload'], $button['url']);
 		unset($this->request['request']['payload']);
     }
@@ -414,11 +414,10 @@ class Alisa extends Handler {
     /**
      * Прослушивать все запросы, которые приходят на сервер.
      *
-     * @return bool|null
+     * @return bool|array
      */
     public function listen() {
         $this->request = json_decode(file_get_contents('php://input'), true);
-        header('Content-Type: application/json');
         if( isset(
             $this->request['request'],
             $this->request['request']['command'],
@@ -463,8 +462,7 @@ class Alisa extends Handler {
                     'version' => "{$this->version}"
                 ]
             );
-            echo json_encode($this->response);
-            return true;
+            return $this->response;
         } elseif( $this->request['request']['type'] == "ButtonPressed" ) {
             $this->response = [];
             if ( !$this->payload($this->request['request']['payload']) ) {
@@ -481,10 +479,8 @@ class Alisa extends Handler {
                     'version' => "{$this->version}"
                 ]
             );
-            echo json_encode($this->response);
-            return true;
+            return $this->response;
         } else {
-            echo $this->response = json_encode([]);
             return false;
         }
     }

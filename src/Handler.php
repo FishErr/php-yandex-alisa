@@ -96,7 +96,7 @@ class Handler {
      *
      * @return mixed|int
      */
-    protected function optionsAnswers(Array $list, int $type = 0) {
+    protected function optionsAnswers(Array $list, $type = 0) {
     	if( $type == 0 ) {
 		    $randomMessage = $list[ rand( 0, count( $list ) - 1 ) ];
 

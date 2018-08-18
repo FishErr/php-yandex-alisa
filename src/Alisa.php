@@ -9,7 +9,7 @@ use Lazer\Classes\Database as DB;
 
 class Alisa extends Handler {
 
-	use SBlock;
+    use SBlock;
 
     /**
      * Версия Алисы по умолчанию.
@@ -78,45 +78,56 @@ class Alisa extends Handler {
      */
     public $response;
 
-	/**
+    /**
      * Выполнять действия, которые указанны.
      * @param String $command
      *
      * @return bool
      */
-    public function cmd(String $command) {
+    public function cmd($command) {
         if( $this->blocks == true ) {
             return $this->executeBlockSystem($command);
         }
-        if( $command == "привет" ) {
-        	$this->sendGallery([
-        		[
-        			"file"=>'1.jpg',
-			        'title'=>'Текст',
-			        'desc'=>"Описание.",
-			        "options"=>[
-			        	'message'=>"Тест",
-			        	'payload'=>[
-			        		"function"=>1
-				        ]
-			        ]
-		        ],
-		        [
-			        "file"=>'2.jpg',
-			        'title'=>'Текст',
-			        'desc'=>"Описание.",
-			        "options"=>[
-				        'message'=>"Тест",
-				        'payload'=>[
-					        "function"=>1
-				        ]
-			        ]
-		        ]
-	        ], 'Тест', 'Привет', [
-	        	'payload'=>[
-	        		'function'=>"test"
-		        ]
-	        ]);
+        if( $command == "А что ты умеешь?" ) {
+            $this->sendGallery([
+                [
+                    "file"=>'1.jpg',
+                    'title'=>'Текст',
+                    'desc'=>"Описание.",
+                    "options"=>[
+                        'message'=>"Тест",
+                        'payload'=>[
+                            "function"=>1
+                        ]
+                    ]
+                ],
+                [
+                    "file"=>'2.jpg',
+                    'title'=>'Текст',
+                    'desc'=>"Описание.",
+                    "options"=>[
+                        'message'=>"Тест",
+                        'payload'=>[
+                            "function"=>1
+                        ]
+                    ]
+                ]
+            ], 'Тест', 'Привет', [
+                'payload'=>[
+                    'function'=>"test"
+                ]
+            ]);
+        } else if( $command == "привет" ) {
+            $this->sendMessage("Приветик")->addButton("А что ты умеешь?");
+            return true;
+        } else if( $this->optionsQuestions(["привеД", "здравствуйте"], $command) ) {
+            $this
+                ->sendMessage($this->optionsAnswers(["Добрый день!", "Я рада вас видеть!"]))
+                ->addButton("А что ты умеешь?");
+            return true;
+        } else {
+            $this->sendMessage("Привет")->addButton("А что ты умеешь?");
+            return true;
         }
         return false;
     }
@@ -128,9 +139,9 @@ class Alisa extends Handler {
      * @return bool
      */
     public function payload(Array $callback) {
-    	if( $this->blocks == true ) {
-    		return $this->executePayload($callback);
-	    }
+        if( $this->blocks == true ) {
+            return $this->executePayload($callback);
+        }
         return false;
     }
 
@@ -144,15 +155,15 @@ class Alisa extends Handler {
         return $this;
     }
 
-	/**
-	 * Установить директорию изображений.
-	 * @param String $path
-	 *
-	 * @return $this
-	 */
-    public function setImagesDir(String $path) {
-    	$this->imagesDir = $path;
-    	return $this;
+    /**
+     * Установить директорию изображений.
+     * @param String $path
+     *
+     * @return $this
+     */
+    public function setImagesDir($path) {
+        $this->imagesDir = $path;
+        return $this;
     }
 
     /**
@@ -185,7 +196,7 @@ class Alisa extends Handler {
      *
      * @return string
      */
-    public function setAny(String $message) {
+    public function setAny($message) {
         $this->anyMessage = $message;
         return $this;
     }
@@ -210,7 +221,7 @@ class Alisa extends Handler {
      *
      * @return $this
      */
-    public function addStartTTS(String $message) {
+    public function addStartTTS($message) {
         $this->startMessageTTS = $message;
         return $this;
     }
@@ -285,81 +296,81 @@ class Alisa extends Handler {
         return $this;
     }
 
-	/**
-	 * Отправить галерею.
-	 * @param array  $images
-	 * @param String $headerText
-	 * @param String $footerText
-	 * @param array  $footerOpt
-	 *
-	 * @return $this
-	 */
+    /**
+     * Отправить галерею.
+     * @param array  $images
+     * @param String $headerText
+     * @param String $footerText
+     * @param array  $footerOpt
+     *
+     * @return $this
+     */
     public function sendGallery(Array $images, $headerText = "", $footerText = "", Array $footerOpt = []) {
-    	$img = DB::table('images')->findAll()->asArray();
-    	$items = [];
-	    $this->response['response']['card'] = [
-		    "type" => "ItemsList"
-	    ];
+        $img = DB::table('images')->findAll()->asArray();
+        $items = [];
+        $this->response['response']['card'] = [
+            "type" => "ItemsList"
+        ];
 
-	    if( $headerText != "" ) {
-	    	$this->response['response']['card']['header'] = ["text"=>$headerText];
-	    }
-    	foreach ($img as $image) {
-    		foreach ($images as $k=>$value) {
-				if ( $image['image_name'] == substr( md5( $value['file'] ), 0, 16 ) ) {
-					$i[$k] = [
-						"image_id"    => $image['image_id'],
-						"title"       => $value['title'],
-						"description" => $value['desc'],
-					];
-					if( $value['options']['url'] != "" ) {
-						$i[$k]["button"]['url'] = $value['options']['url'];
-					}
-					if( $value['options']['payload'] != "" ) {
-						$i[$k]["button"]['payload'] = $value['options']['payload'];
-					}
-					if( $value['options']['message'] != "" ) {
-						$i[$k]["button"]['text'] = $value['options']['message'];
-					}
-					$items['items'] = $i;
-				    $paths[]          = substr( md5( $value['file'] ), 0, 16 );
-				}
-		    }
-	    }
+        if( $headerText != "" ) {
+            $this->response['response']['card']['header'] = ["text"=>$headerText];
+        }
+        foreach ($img as $image) {
+            foreach ($images as $k=>$value) {
+                if ( $image['image_name'] == substr( md5( $value['file'] ), 0, 16 ) ) {
+                    $i[$k] = [
+                        "image_id"    => $image['image_id'],
+                        "title"       => $value['title'],
+                        "description" => $value['desc'],
+                    ];
+                    if( $value['options']['url'] != "" ) {
+                        $i[$k]["button"]['url'] = $value['options']['url'];
+                    }
+                    if( $value['options']['payload'] != "" ) {
+                        $i[$k]["button"]['payload'] = $value['options']['payload'];
+                    }
+                    if( $value['options']['message'] != "" ) {
+                        $i[$k]["button"]['text'] = $value['options']['message'];
+                    }
+                    $items['items'] = $i;
+                    $paths[]          = substr( md5( $value['file'] ), 0, 16 );
+                }
+            }
+        }
 
-	    $this->response['response']['card'] = array_merge($this->response['response']['card'], $items);
-    	if( $footerText != "" ) $this->response['response']['card']['footer'] = ["text"=>$footerText];
-    	if( $footerOpt != [] ) $this->response['response']['card']['footer'] = ["button"=>["url"=>$footerOpt['url'], "payload"=>$footerOpt['payload']]];
-    	return $this;
+        $this->response['response']['card'] = array_merge($this->response['response']['card'], $items);
+        if( $footerText != "" ) $this->response['response']['card']['footer'] = ["text"=>$footerText];
+        if( $footerOpt != [] ) $this->response['response']['card']['footer'] = ["button"=>["url"=>$footerOpt['url'], "payload"=>$footerOpt['payload']]];
+        return $this;
     }
 
-	/**
-	 * Отправить изображение.
-	 * @param         $path
-	 * @param string  $title
-	 * @param string  $description
-	 * @param array   $options
-	 *
-	 * @return $this
-	 */
+    /**
+     * Отправить изображение.
+     * @param         $path
+     * @param string  $title
+     * @param string  $description
+     * @param array   $options
+     *
+     * @return $this
+     */
     public function sendImage($path, $title = "", $description = "", Array $options = []) {
-    	$img = DB::table('images')->findAll()->asArray();
-    	foreach ($img as $key=>$value) {
-    		if( $value['image_name'] == substr(md5($path), 0, 16) ) {
-			    $this->response['response']['card'] =[
-				    "type"        => "BigImage",
-				    "image_id"    => $value['image_id'],
-				    "title"       => $title,
-				    "description" => $description
-			    ];
-			    if( $options != [] ) {
-			    	$this->response['response']['card']['button'] = ['url'=>$options['url'], 'payload'=>$options['payload']];
-			    }
-    			return $this;
-		    }
-	    }
-	    $mPath = substr(md5($path), 0, 16);
-	    die("[ALISA]: Image \"{$mPath}\" not found. [Original: {$path}]");
+        $img = DB::table('images')->findAll()->asArray();
+        foreach ($img as $key=>$value) {
+            if( $value['image_name'] == substr(md5($path), 0, 16) ) {
+                $this->response['response']['card'] =[
+                    "type"        => "BigImage",
+                    "image_id"    => $value['image_id'],
+                    "title"       => $title,
+                    "description" => $description
+                ];
+                if( $options != [] ) {
+                    $this->response['response']['card']['button'] = ['url'=>$options['url'], 'payload'=>$options['payload']];
+                }
+                return $this;
+            }
+        }
+        $mPath = substr(md5($path), 0, 16);
+        die("[ALISA]: Image \"{$mPath}\" not found. [Original: {$path}]");
     }
 
     /**
@@ -382,19 +393,19 @@ class Alisa extends Handler {
             );
         }
     }
-	protected function sendPayload($message, $tts = "", array $button = []) {
-		$this->sendMessage($message, $tts)->addButton($button['title'], $button['hide'], $button['payload'], $button['url']);
-		unset($this->request['request']['payload']);
+    protected function sendPayload($message, $tts = "", array $button = []) {
+        $this->sendMessage($message, $tts)->addButton($button['title'], $button['hide'], $button['payload'], $button['url']);
+        unset($this->request['request']['payload']);
     }
 
 
-	/**
+    /**
      * Вывести переменные.
      * @param String $message
      *
      * @return mixed|String
      */
-    public function printVars(String $message) {
+    public function printVars($message) {
         $words = explode(" ", $message);
         foreach ($words as $key => $value) {
             if (strstr($value, '{') && strstr($value, '}')) {

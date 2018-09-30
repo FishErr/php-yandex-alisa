@@ -29,7 +29,7 @@ trait SBlock {
 	 *
 	 * @return string
 	 */
-	private function errorMessage(int $error, array $input = []) {
+	private function errorMessage($error, array $input = []) {
 		if( $input != "" ) {
 			foreach ($input as $placeholder=>$value) {
 				if( strstr($this->errorMessages[$error], $placeholder) ) {
@@ -46,7 +46,7 @@ trait SBlock {
 	 *
 	 * @return bool
 	 */
-	public function executeBlockSystem(String $command) {
+	public function executeBlockSystem($command) {
 		$command = mb_strtolower($command);
 		$this->__command = $command;
 		$action = $this->objectToArray($this->read('actions.json'));

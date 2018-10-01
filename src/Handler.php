@@ -169,7 +169,7 @@ class Handler {
                 foreach ($words as $key => $value) {
                     if (strstr($value, '{') && strstr($value, '}')) {
                         $index = substr(strstr($value, '{'), 1,strpos($value, '}') - 1);
-                        $var[$index] = $s[$key];
+                        $var[$index] = @$s[$key];
                         $words[$key] = ".*";
                     }
                 }

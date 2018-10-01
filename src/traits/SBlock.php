@@ -270,11 +270,14 @@ trait SBlock {
 		$payload = $this->objectToArray( $this->read( 'payload.json' ) );
 		$cPayload = count($payload);
 		$i=0;
+        if(!isset($callback[0])){
+            $callback = [$callback]; //@todo refactor/ fix foreach
+        }
 		foreach ($callback as $key=>$value) {
 			$message = ""; $tts = ""; $button = [];
             if(!empty($value['function']) && is_array($value['function'])){
                 /** @var Result $result */
-                $result = call_user_func_array([str_replace('\\\\', '\\', key($value['function'])), current($value['function'])], $value['vars']);
+                $result = call_user_func_array([str_replace('\\\\', '\\', key($value['function'])), current($value['function'])], isset($value['vars']) ? $value['vars'] : []);
                 if(empty($result->getButton())){
                     $this->sendMessage($result->getMessage(), $result->getTts());
                 } else {

@@ -2,6 +2,8 @@
 
 namespace yandex\alisa\traits;
 
+use yandex\alisa\Result;
+
 trait SBlock {
 
 	/**
@@ -270,99 +272,127 @@ trait SBlock {
 		$i=0;
 		foreach ($callback as $key=>$value) {
 			$message = ""; $tts = ""; $button = [];
-			foreach ( $payload as $function => $execute ) {
-				if ( in_array($function, $value) ) {
-					if( array_key_exists('sendMessage', $execute) )  {
-						foreach ($execute as &$func) {
-							$rand = 0;
-							foreach ($value['vars'] as $param=>$val) {
-
-								if( is_array($func['message']) ) {
-									$rand = $this->optionsAnswers($func['message'], 1);
-									$func['message'] = $func['message'][$rand];
-								}
-
-								$words = explode(" ", $func['message']);
-								foreach ($words as $key => $text) {
-									if (strstr($text, '$') && strstr($text, '$')) {
-										$var = substr(strstr($text, '$'), 1,strpos($text, '$') - 1);
-
-										if( strstr($text, '^') ) {
-											$val = $this->spellingCheck($val);
-										}
-										$var = str_replace('^', '', $var);
-										$func['message'] = str_replace('^', '', $func['message']);
-
-										if( strstr($text, "|") ) {
-											if( explode('|', $var)[0] == $param || explode('|', $var)[1] == $param ) {
-												$message = $func['message'];
-												$message = str_replace("$".$var."$", $val, $message);
-											}
-										} else {
-											if( $var == $param ) {
-												$message = $func['message'];
-												$message = str_replace("$".$var."$", $val, $message);
-											}
-										}
-									}
-								}
-								if( $message == "" ) {
-									$message = $func['message'];
-								}
-
-								if( is_array($func['tts']) ) {
-									$func['tts'] = $func['tts'][$rand];
-								}
-								$wordsTts = explode(" ", $func['tts']);
-								foreach ($wordsTts as $key => $text) {
-									if (strstr($text, '$') && strstr($text, '$')) {
-										$var = substr(strstr($text, '$'), 1,strpos($text, '$') - 1);
-										if( strstr($text, "|") ) {
-											if( explode('|', $var)[0] == $param || explode('|', $var)[1] == $param ) {
-												$tts = $func['tts'];
-												$tts = str_replace("$".$var."$", $val, $tts);
-											}
-										} else {
-											if( $var == $param ) {
-												$tts = $func['tts'];
-												$tts = str_replace("$".$var."$", $val, $tts);
-											}
-										}
-									}
-								}
-								if( $tts == "" ) {
-									$tts = $func['tts'];
-								}
-							}
-						}
-					}
-					if( array_key_exists('sendButtons', $execute) )  {
-						if( is_array($execute['sendButtons'][0]) ) {
-							foreach ($execute['sendButtons'] as $kb=>$v) {
-								foreach ($execute['sendButtons'][$kb]['payload'] as $nPayload => $vPayload) {
-									$execute['sendButtons'][$kb]['payload'][$nPayload]['vars'] = $value['vars'];
-								}
-							}
-							foreach ($execute['sendButtons'] as $kb=>$val) {
-								$button  = $val;
-							}
-						} else {
-							foreach ($execute['sendButtons']['payload'] as $nPayload => $vPayload) {
-								$execute['sendButtons']['payload'][$nPayload]['vars'] = $value['vars'];
-							}
-							$button = $execute['sendButtons'];
-						}
-					}
-					$this->sendPayload($message, $tts, $button);
-					return true;
-				} else {
-					if( $i++ < $cPayload ) {
-						continue;
-					}
-					die( $this->errorMessage(4, ['function'=>$function]));
-				}
-			}
+            if(!empty($value['function']) && is_array($value['function'])){
+                /** @var Result $result */
+                $result = call_user_func_array([str_replace('\\\\', '\\', key($value['function'])), current($value['function'])], $value['vars']);
+                $this->sendPayload($result->getMessage(), $result->getTts(), $result->getButton());
+                return true;
+            } else {
+                foreach ( $payload as $function => $execute ) {
+                    if ( in_array($function, $value) ) {
+                        if( array_key_exists('sendMessage', $execute) )  {
+                            foreach ($execute as &$func) {
+                                $this->prepareMessage($value, $func, $message, $tts);
+                            }
+                        }
+                        if( array_key_exists('sendButtons', $execute) )  {
+                            $button = $this->prepareButtons($execute, $value);
+                        }
+                        $this->sendPayload($message, $tts, $button);
+                        return true;
+                    } else {
+                        if( $i++ < $cPayload ) {
+                            continue;
+                        }
+                        die( $this->errorMessage(4, ['function'=>$function]));
+                    }
+                }
+            }
 		}
 		return false;
 	}
+
+    /**
+     * @param $value
+     * @param $func
+     * @param $message
+     * @param $tts
+     */
+    protected function prepareMessage($value, $func, &$message, &$tts)
+    {
+        $rand = 0;
+        foreach ($value['vars'] as $param=>$val) {
+
+            if( is_array($func['message']) ) {
+                $rand = $this->optionsAnswers($func['message'], 1);
+                $func['message'] = $func['message'][$rand];
+            }
+
+            $words = explode(" ", $func['message']);
+            foreach ($words as $key => $text) {
+                if (strstr($text, '$') && strstr($text, '$')) {
+                    $var = substr(strstr($text, '$'), 1,strpos($text, '$') - 1);
+
+                    if( strstr($text, '^') ) {
+                        $val = $this->spellingCheck($val);
+                    }
+                    $var = str_replace('^', '', $var);
+                    $func['message'] = str_replace('^', '', $func['message']);
+
+                    if( strstr($text, "|") ) {
+                        if( explode('|', $var)[0] == $param || explode('|', $var)[1] == $param ) {
+                            $message = $func['message'];
+                            $message = str_replace("$".$var."$", $val, $message);
+                        }
+                    } else {
+                        if( $var == $param ) {
+                            $message = $func['message'];
+                            $message = str_replace("$".$var."$", $val, $message);
+                        }
+                    }
+                }
+            }
+            if( $message == "" ) {
+                $message = $func['message'];
+            }
+
+            if( is_array($func['tts']) ) {
+                $func['tts'] = $func['tts'][$rand];
+            }
+            $wordsTts = explode(" ", $func['tts']);
+            foreach ($wordsTts as $key => $text) {
+                if (strstr($text, '$') && strstr($text, '$')) {
+                    $var = substr(strstr($text, '$'), 1,strpos($text, '$') - 1);
+                    if( strstr($text, "|") ) {
+                        if( explode('|', $var)[0] == $param || explode('|', $var)[1] == $param ) {
+                            $tts = $func['tts'];
+                            $tts = str_replace("$".$var."$", $val, $tts);
+                        }
+                    } else {
+                        if( $var == $param ) {
+                            $tts = $func['tts'];
+                            $tts = str_replace("$".$var."$", $val, $tts);
+                        }
+                    }
+                }
+            }
+            if(empty($tts)) {
+                $tts = $func['tts'];
+            }
+        }
+    }
+
+    protected function prepareButtons(&$execute, $value)
+    {
+        $button = ['payload' => []];
+        if( is_array($execute['sendButtons'][0]) ) {
+            foreach ($execute['sendButtons'] as $kb=>$v) {
+                foreach ($execute['sendButtons'][$kb]['payload'] as $nPayload => $vPayload) {
+                    $execute['sendButtons'][$kb]['payload'][$nPayload]['vars'] = $value['vars'];
+                }
+            }
+            foreach ($execute['sendButtons'] as $kb=>$val) {
+                $button  = $val;
+            }
+        } else {
+            foreach ($execute['sendButtons']['payload'] as $nPayload => $vPayload) {
+                $execute['sendButtons']['payload'][$nPayload]['vars'] = $value['vars'];
+            }
+
+            if(is_array($execute['sendButtons'])){
+                $button = $execute['sendButtons'];
+            }
+        }
+        return $button;
+    }
 }

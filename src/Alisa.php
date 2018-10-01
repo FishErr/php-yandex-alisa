@@ -394,7 +394,14 @@ class Alisa extends Handler {
         }
     }
     protected function sendPayload($message, $tts = "", array $button = []) {
-        $this->sendMessage($message, $tts)->addButton($button['title'], $button['hide'], $button['payload'], $button['url']);
+        $this->sendMessage($message, $tts);
+        if(isset($button[0])){
+            foreach ($button as $b) {
+                $this->addButton($b['title'], $b['hide'], $b['payload'], $b['url']);
+            }
+        } else {
+            $this->addButton($button['title'], $button['hide'], $button['payload'], $button['url']);
+        }
         unset($this->request['request']['payload']);
     }
 

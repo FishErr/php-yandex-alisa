@@ -275,7 +275,11 @@ trait SBlock {
             if(!empty($value['function']) && is_array($value['function'])){
                 /** @var Result $result */
                 $result = call_user_func_array([str_replace('\\\\', '\\', key($value['function'])), current($value['function'])], $value['vars']);
-                $this->sendPayload($result->getMessage(), $result->getTts(), $result->getButton());
+                if(empty($result->getButton())){
+                    $this->sendMessage($result->getMessage(), $result->getTts());
+                } else {
+                    $this->sendPayload($result->getMessage(), $result->getTts(), $result->getButton());
+                }
                 return true;
             } else {
                 foreach ( $payload as $function => $execute ) {

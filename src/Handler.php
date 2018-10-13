@@ -152,6 +152,7 @@ class Handler {
                     $math .= $value. "";
                 }
             }
+            $math = mb_strtolower($math, 'UTF-8');
             $math = "/".$math."/";
             if( preg_match($math, $command) ) {
                 $this->vars = $var;
@@ -180,6 +181,7 @@ class Handler {
                         $math .= $value. "";
                     }
                 }
+                $math = mb_strtolower($math, 'UTF-8');
                 $math = "/".$math."/";
                 if( preg_match($math, $command) ) {
                     $this->vars = $var;

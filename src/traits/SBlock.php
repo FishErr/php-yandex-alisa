@@ -49,7 +49,7 @@ trait SBlock {
 	 * @return bool
 	 */
 	public function executeBlockSystem($command) {
-		$command = mb_strtolower($command);
+		$command = mb_strtolower($command, 'UTF-8');
 		$this->__command = $command;
 		$action = $this->objectToArray($this->read('actions.json'));
 
@@ -57,7 +57,9 @@ trait SBlock {
 		foreach ($action as &$value) {
 			if( array_key_exists('question', $value) || array_key_exists('prepare', $value)  ) {
 				if( array_key_exists('send', $value) ) {
-					$foundPrepare = $this->prepare($value['prepare'], $command);
+                    if( array_key_exists('prepare', $value)) {
+                        $foundPrepare = $this->prepare($value['prepare'], $command);
+                    }
 					$foundCommand = false;
 					$prepareCommand = false;
 
@@ -70,12 +72,12 @@ trait SBlock {
 
 					if( is_array($value['question']) ) {
 						foreach ($value['question'] as $question) {
-							if( $question == $command ) {
+							if( mb_strtolower($question, 'UTF-8') == $command ) {
 								$foundCommand = true;
 							}
 						}
 					} else {
-						if( $value['question'] == $command ) {
+						if( mb_strtolower($value['question'], 'UTF-8') == $command ) {
 							$foundCommand = true;
 						}
 					}
@@ -211,6 +213,18 @@ trait SBlock {
 								}
 							}
 						}
+                        if( array_key_exists('function', $value['send']) && array_key_exists('callback', $value['send']['function']) ) {
+                            /** @var Result $result */
+                            $result = call_user_func_array(
+                                [str_replace('\\\\', '\\', $value['send']['function']['callback'][0]), $value['send']['function']['callback'][1]],
+                                isset($value['send']['function']['vars']) ? $value['send']['function']['vars'] : []
+                            );
+                            if(empty($result->getButton())){
+                                $this->sendMessage($result->getMessage(), $result->getTts());
+                            } else {
+                                $this->sendPayload($result->getMessage(), $result->getTts(), $result->getButton());
+                            }
+                        }
 					} else {
 						return $this->sendMessage(
 							$this->anyMessage
@@ -275,9 +289,12 @@ trait SBlock {
         }
 		foreach ($callback as $key=>$value) {
 			$message = ""; $tts = ""; $button = [];
-            if(!empty($value['function']) && is_array($value['function'])){
+            if(!empty($value['callback']) && is_array($value['callback'])){
                 /** @var Result $result */
-                $result = call_user_func_array([str_replace('\\\\', '\\', key($value['function'])), current($value['function'])], isset($value['vars']) ? $value['vars'] : []);
+                $result = call_user_func_array(
+                    [str_replace('\\\\', '\\', $value['callback'][0]), $value['callback'][1]],
+                    isset($value['vars']) ? $value['vars'] : []
+                );
                 if(empty($result->getButton())){
                     $this->sendMessage($result->getMessage(), $result->getTts());
                 } else {

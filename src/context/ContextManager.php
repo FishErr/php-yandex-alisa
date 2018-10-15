@@ -102,8 +102,12 @@ class ContextManager
      */
     public function update($context, $userId = null, $sessionId = null)
     {
-        $userId = ($userId) ? $userId : $this->userId;
-        $sessionId = ($sessionId) ? $sessionId : $this->sessionId;
-        $this->contextRepository->update($userId, $sessionId, $context);
+        if(empty($context)){
+            $this->remove($userId, $sessionId);
+        } else {
+            $userId = ($userId) ? $userId : $this->userId;
+            $sessionId = ($sessionId) ? $sessionId : $this->sessionId;
+            $this->contextRepository->update($userId, $sessionId, $context);
+        }
     }
 }

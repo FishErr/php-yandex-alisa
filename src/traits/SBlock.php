@@ -224,7 +224,7 @@ trait SBlock {
                             } else {
                                 $this->sendPayload($result->getMessage(), $result->getTts(), $result->getButton());
                             }
-                            $this->getContextManager()->update($result->getButton());
+                            $this->getContextManager()->update($result->getContext());
                         }
 					} else {
 						return $this->sendMessage(
@@ -301,7 +301,7 @@ trait SBlock {
                 } else {
                     $this->sendPayload($result->getMessage(), $result->getTts(), $result->getButton());
                 }
-                $this->getContextManager()->update($result->getButton());
+                $this->getContextManager()->update($result->getContext());
                 return true;
             } else {
                 foreach ( $payload as $function => $execute ) {

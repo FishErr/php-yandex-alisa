@@ -20,6 +20,11 @@ class Result
     protected $button;
 
     /**
+     * @var array
+     */
+    protected $context;
+
+    /**
      * @return string
      */
     public function getMessage()
@@ -65,5 +70,21 @@ class Result
     public function setButton($button)
     {
         $this->button = $button;
+    }
+
+    /**
+     * @return array
+     */
+    public function getContext()
+    {
+        return $this->context;
+    }
+
+    /**
+     * @param array $context
+     */
+    public function setContext($context)
+    {
+        $this->context = $context;
     }
 }

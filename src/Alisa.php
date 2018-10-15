@@ -3,6 +3,7 @@
 namespace yandex\alisa;
 
 
+use yandex\alisa\context\ContextManager;
 use yandex\alisa\traits\SBlock;
 use Lazer\Classes\Database as DB;
 
@@ -436,20 +437,25 @@ class Alisa extends Handler {
      */
     public function listen() {
         $this->request = json_decode(file_get_contents('php://input'), true);
-        if( isset(
-            $this->request['request'],
-            $this->request['request']['command'],
+        if( !isset(
             $this->request['session'],
             $this->request['session']['session_id'],
             $this->request['session']['message_id'],
             $this->request['session']['user_id']
+        ) ) {
+            return false;
+        }
+        $this->contextManager = new ContextManager($this->request['session']['user_id'], $this->request['session']['session_id']);
+        if( isset(
+            $this->request['request'],
+            $this->request['request']['command']
         ) ) {
             $this->logger();
 
             if( $this->speller == true ) {
                 $this->request['request']['command'] = $this->spellingCheck($this->request['request']['command']);
             }
-
+            $this->response = [];
             if ( $this->request['request']['command'] == "" ) {
                 $this->response = [
                     'response' => [
@@ -465,9 +471,19 @@ class Alisa extends Handler {
                 } else {
                     $command = mb_strtolower($this->request['request']['command']);
                 }
-                if ( !$this->cmd($command) ) {
-                    $this->response['response']['text'] = $this->anyMessage;
-                };
+                if($this->getContextManager()->exists()){
+                    $context = $this->getContextManager()->getByCommand($command);
+                    if (!$context || empty($context['payload']) || !$this->payload($context['payload'])) { //@todo add response->ispPropagation
+                        $this->getContextManager()->remove();
+                        if ( !$this->cmd($command) ) {
+                            $this->response['response']['text'] = $this->anyMessage;
+                        };
+                    };
+                } else {
+                    if ( !$this->cmd($command) ) {
+                        $this->response['response']['text'] = $this->anyMessage;
+                    };
+                }
             }
 
             $this->response = array_merge($this->response,
@@ -501,5 +517,13 @@ class Alisa extends Handler {
         } else {
             return false;
         }
+    }
+
+    /**
+     * @return ContextManager
+     */
+    public function getContextManager()
+    {
+        return $this->contextManager;
     }
 }

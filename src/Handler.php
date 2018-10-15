@@ -6,6 +6,7 @@ use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use RomaricDrigon\MetaYaml\Loader\YamlLoader;
 use Lazer\Classes\Database as DB;
+use yandex\alisa\context\ContextManager;
 
 define('LAZER_DATA_PATH', realpath( __DIR__).'/database/');
 
@@ -60,9 +61,13 @@ class Handler {
     public $imagesDir = "images";
 
     /**
+     * @var ContextManager
+     */
+    protected $contextManager;
+
+    /**
      * Handler constructor.
      */
-
     public function __construct($logFile, $imagePath, $blocksPath, $configPath) {
         $this->imagesDir = $imagePath;
         $this->logFile = $logFile;
@@ -72,6 +77,7 @@ class Handler {
         $this->token     = $setting['skill-token'];
         $this->skillID   = $setting['skill-id'];
         $this->skillName = $setting['skill-name'];
+        $this->contextManager = new ContextManager();
     }
 
 

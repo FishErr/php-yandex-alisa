@@ -1,12 +1,14 @@
 {
   "name": "avtonom/php-yandex-alisa",
-  "description": "PHP lib for alisa-bot",
-  "type": "project",
+  "description": "PHP lib for yandex alisa-bot dialogs",
+  "type": "library",
+  "keywords": ["yandex", "yandex.alice", "alice", "yandex.alisa", "alisa", "yandexalice", "yandexalisa", "yandexdialogs", "yandex.dialogs", "bot", "dialogs"],
+  "homepage": "https://github.com/Avtonom/php-yandex-alisa",
   "license": "MIT",
   "authors": [
     {
-      "name": "Danil Sidorenko",
-      "email": "danilsidorenko98@mail.ru"
+      "name": "Danil Sidorenko, Anton U",
+      "email": "danilsidorenko98@mail.ru, avtonomspb@mail.ru"
     }
   ],
   "version": "2.1",

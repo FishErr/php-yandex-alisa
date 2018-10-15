@@ -12,7 +12,7 @@ class ContextRepository
     {
         try {
             \Lazer\Classes\Helpers\Validate::table(self::TABLE_NAME)->exists();
-        } catch (Lazer\Classes\LazerException $e) {
+        } catch (\Lazer\Classes\LazerException $e) {
             DB::create(self::TABLE_NAME, array(
                 'user_id' => 'string',
                 'session_id' => 'string',

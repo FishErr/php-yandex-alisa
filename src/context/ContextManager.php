@@ -75,7 +75,7 @@ class ContextManager
             foreach ($contextData as $contextItem) {
                 if(
                     (count($contextData) == 1 && empty($contextItem['title'])) ||
-                    $contextItem['title'] == $command
+                    mb_strtolower($contextItem['title'], 'UTF-8') == $command
                 ){
                     return $contextItem;
                 }

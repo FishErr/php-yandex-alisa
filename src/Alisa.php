@@ -469,7 +469,7 @@ class Alisa extends Handler {
                 if( $this->caseSensitive == true  ) {
                     $command = $this->request['request']['command'];
                 } else {
-                    $command = mb_strtolower($this->request['request']['command']);
+                    $command = mb_strtolower($this->request['request']['command'], 'UTF-8');
                 }
                 if($this->getContextManager()->exists()){
                     $context = $this->getContextManager()->getByCommand($command);

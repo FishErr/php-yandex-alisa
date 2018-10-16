@@ -65,18 +65,24 @@ class ContextManager
      * @param string $command
      * @param string|null $userId
      * @param string|null $sessionId
+     * @param bool|true $isAddCommand
      *
      * @return array|bool
      */
-    public function getByCommand($command, $userId = null, $sessionId = null)
+    public function getByCommand($command, $userId = null, $sessionId = null, $isAddCommand = true)
     {
         if($context = $this->get($userId, $sessionId)){
             $contextData = json_decode($context, true, JSON_UNESCAPED_UNICODE);
             foreach ($contextData as $contextItem) {
-                if(
-                    (count($contextData) == 1 && empty($contextItem['title'])) ||
-                    mb_strtolower($contextItem['title'], 'UTF-8') == mb_strtolower($command, 'UTF-8') //@todo use $this->caseSensitive == true
-                ){
+                // default action to all message (save message)
+                if(count($contextData) == 1 && empty($contextItem['title'])){
+                    if(!empty($contextItem['payload']) && $isAddCommand){
+                        $contextItem['payload']['vars']['command'] = $command;
+                    }
+                    return $contextItem;
+
+                // find personal action to massage (no save message)
+                } elseif (mb_strtolower($contextItem['title'], 'UTF-8') == mb_strtolower($command, 'UTF-8')){ //@todo use $this->caseSensitive == true
                     return $contextItem;
                 }
             }

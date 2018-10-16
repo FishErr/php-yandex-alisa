@@ -217,6 +217,7 @@ class Handler {
      * @return mixed|String
      */
     protected function spellingCheck($message) {
+        $message = trim($message);
         $ch = curl_init();
         $options = [
             CURLOPT_URL => "https://speller.yandex.net/services/spellservice.json/checkText",

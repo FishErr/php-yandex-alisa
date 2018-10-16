@@ -75,7 +75,7 @@ class ContextManager
             foreach ($contextData as $contextItem) {
                 if(
                     (count($contextData) == 1 && empty($contextItem['title'])) ||
-                    mb_strtolower($contextItem['title'], 'UTF-8') == $command
+                    mb_strtolower($contextItem['title'], 'UTF-8') == mb_strtolower($command, 'UTF-8') //@todo use $this->caseSensitive == true
                 ){
                     return $contextItem;
                 }

@@ -80,7 +80,6 @@ class Handler {
         $this->contextManager = new ContextManager();
     }
 
-
     /**
      * Вариация вопросов.
      * @param array  $list

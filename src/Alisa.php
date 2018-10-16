@@ -473,7 +473,9 @@ class Alisa extends Handler {
                 }
                 if($this->getContextManager()->exists()){
                     $context = $this->getContextManager()->getByCommand($command);
-                    $context['payload']['vars']['command'] = $command;
+                    if(!empty($context['payload'])){
+                        $context['payload']['vars']['command'] = $command;
+                    }
                     if (!$context || empty($context['payload']) || !$this->payload($context['payload'])) { //@todo add response->ispPropagation
                         $this->getContextManager()->remove();
                         if ( !$this->cmd($command) ) {

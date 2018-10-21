@@ -226,12 +226,8 @@ trait SBlock {
                             }
                             $this->getContextManager()->update($result->getContext() ? $result->getContext() : $result->getButton());
                         }
-					} else {
-						return $this->sendMessage(
-							$this->anyMessage
-						);
+                        return true; //@todo use result flag
 					}
-					return true;
 				} else {
 					die($this->errorMessage(2));
 				}

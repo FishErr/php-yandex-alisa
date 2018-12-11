@@ -1,5 +1,4 @@
 <?php
-
 namespace yandex\alisa;
 
 use League\Flysystem\Adapter\Local;
@@ -137,59 +136,48 @@ class Handler {
     protected function prepare($getMessage, $command) {
         $var = []; $math = "";
         if( !is_array($getMessage) ) {
+            $preg= '';
+            $varNames = [];
             $words = explode(" ", $getMessage);
-            $wordsCommand = explode(" ", $command);
-
-
-            $s = array_diff($wordsCommand, $words);
-
             foreach ($words as $key => $value) {
                 if (strstr($value, '{') && strstr($value, '}')) {
+                    // variable
                     $index = substr(strstr($value, '{'), 1,strpos($value, '}') - 1);
-                    $var[$index] = $s[$key];
-                    $words[$key] = ".*";
+                    $varNames[] = $index;
+                    $preg .= '(.*)';
+                }else{
+                    // keyword
+                    $preg .= $value;
                 }
             }
-            foreach ($words as $key=>$value) {
-                if( array_key_exists($key+1, $words) ) {
-                    $math .= $value. " ";
-                } else {
-                    $math .= $value. "";
+            if(preg_match_all('~^' . $preg . '$~mu', $command, $matches, PREG_SET_ORDER)) {
+                array_shift($matches[0]);
+                foreach ($matches[0] as $key => $match) {
+                    $this->vars[$varNames[$key]] = trim($match);
                 }
-            }
-            $math = mb_strtolower($math, 'UTF-8');
-            $math = "/".$math."/";
-            if( preg_match($math, $command) ) {
-                $this->vars = $var;
                 return true;
             }
         } else {
             foreach ($getMessage as $k=>$msg) {
-                $math = "";
                 $words = explode(" ", $msg);
-                $wordsCommand = explode(" ", $command);
-
-
-                $s = array_diff($wordsCommand, $words);
-
+                $preg = '';
+                $varNames = [];
                 foreach ($words as $key => $value) {
                     if (strstr($value, '{') && strstr($value, '}')) {
+                        // variable
                         $index = substr(strstr($value, '{'), 1,strpos($value, '}') - 1);
-                        $var[$index] = @$s[$key];
-                        $words[$key] = ".*";
+                        $varNames[] = $index;
+                        $preg .= '(.*)';
+                    }else{
+                        // keyword
+                        $preg .= $value;
                     }
                 }
-                foreach ($words as $key=>$value) {
-                    if( array_key_exists($key+1, $words) ) {
-                        $math .= $value. " ";
-                    } else {
-                        $math .= $value. "";
+                if(preg_match_all('~^' . $preg . '$~mu', $command, $matches, PREG_SET_ORDER)) {
+                    array_shift($matches[0]);
+                    foreach ($matches[0] as $key => $match) {
+                        $this->vars[$varNames[$key]] = trim($match);
                     }
-                }
-                $math = mb_strtolower($math, 'UTF-8');
-                $math = "/".$math."/";
-                if( preg_match($math, $command) ) {
-                    $this->vars = $var;
                     return true;
                 } else {
                     continue;
